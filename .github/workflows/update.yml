@@ -1,0 +1,55 @@
+name: check-updates
+
+on:
+  schedule:
+    - cron: "0 20 * * 0"   # 每周日 20:00 UTC = 周一 04:00 CST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Feishu & MoeKoeMusic
+        uses: docker://ghcr.io/flathub/flatpak-external-data-checker:latest
+        env:
+          GIT_AUTHOR_NAME: fedc[bot]
+          GIT_COMMITTER_NAME: fedc[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: --commit-only --commit-to-current-branch
+            manifests/cn.feishu.Feishu.yaml
+            manifests/io.github.MoeKoeMusic.MoeKoeMusic.yaml
+
+      - name: Check WPS (via AUR pkgver)
+        id: wps
+        run: bash scripts/check-wps-update.sh
+
+      - name: Commit WPS bump
+        if: steps.wps.outputs.NEW_VER != ''
+        run: |
+          git config user.name "fedc[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A ':!downloads'
+          git commit -m "WPS: bump to ${{ steps.wps.outputs.NEW_VER }}"
+
+      - name: Push and trigger build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch -q origin main
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+            git push origin HEAD:main
+            sleep 10
+            gh workflow run build.yml
+            echo "已推送并触发构建"
+          else
+            echo "无更新"
+          fi

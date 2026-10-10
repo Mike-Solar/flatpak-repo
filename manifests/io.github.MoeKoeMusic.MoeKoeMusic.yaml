@@ -41,6 +41,11 @@ modules:
         url: https://github.com/MoeKoeMusic/MoeKoeMusic/releases/download/v1.7.0/MoeKoe_Music_v1.7.0-amd64.deb
         sha256: fdc496fe5e88f8b2499458059648a8dff2e789e9702785294d72ffa53c1585fb
         dest-filename: moekoe.deb
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/MoeKoeMusic/MoeKoeMusic/releases/latest
+          version-query: .tag_name | sub("^v"; "")
+          url-query: .assets[] | select(.name | test("amd64\\.deb$")) | .browser_download_url
       - type: dir
         path: ../files/moekoemusic
         dest: files

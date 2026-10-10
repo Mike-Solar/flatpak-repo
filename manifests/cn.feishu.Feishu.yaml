@@ -41,6 +41,11 @@ modules:
         url: https://sf3-cn.feishucdn.com/obj/ee-appcenter/fc38d53a/Feishu-linux_x64-7.72.23.deb
         sha256: 7c744ce101e29f50d8d0fc099788b64cb389dde3178178a7fce9ffcdbf296e13
         dest-filename: feishu.deb
+        x-checker-data:
+          type: json
+          url: https://www.feishu.cn/api/downloads
+          version-query: .versions.Linux_deb_x64.version_number | sub(".*@V"; "")
+          url-query: .versions.Linux_deb_x64.download_link
       - type: dir
         path: ../files/feishu
         dest: files
