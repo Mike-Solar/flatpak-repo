@@ -1,0 +1,65 @@
+app-id: io.github.MCDFsteve.NipaPlay-Reload
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: nipaplay
+separate-locales: false
+
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --share=network
+  - --device=dri
+  - --filesystem=home
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=org.mpris.MediaPlayer2.*
+
+modules:
+  - name: libusb
+    buildsystem: autotools
+    build-options:
+      no-debuginfo: true
+    sources:
+      - type: archive
+        url: https://github.com/libusb/libusb/releases/download/v1.0.27/libusb-1.0.27.tar.bz2
+        sha256: ffaa41d741a8a3bee244ac8e54a72ea05bf2879663c098c82fc5757853441575
+
+  - name: nipaplay
+    buildsystem: simple
+    # Flutter AOT 库会被 debuginfo 提取(eu-strip)弄坏：
+    # "object file has no loadable segments"。注意必须放在 build-options 里，
+    # 直接写在模块层级会被静默忽略
+    build-options:
+      no-debuginfo: true
+    build-commands:
+      - chmod +x nipa.AppImage
+      - ./nipa.AppImage --appimage-extract
+      - install -d /app/opt /app/bin /app/share/applications /app/share/metainfo
+        /app/share/icons/hicolor/512x512/apps
+      - cp -r squashfs-root /app/opt/nipaplay
+      - install -Dm755 files/nipaplay.sh /app/bin/nipaplay
+      - sed -e 's|^Exec=.*|Exec=nipaplay %f|'
+        squashfs-root/io.github.MCDFsteve.NipaPlay-Reload.desktop
+        > /app/share/applications/io.github.MCDFsteve.NipaPlay-Reload.desktop
+      # 图标原图 838px 超出 flatpak 512px 上限，用预缩放的
+      - install -Dm644 files/io.github.MCDFsteve.NipaPlay-Reload.png
+        /app/share/icons/hicolor/512x512/apps/io.github.MCDFsteve.NipaPlay-Reload.png
+      - install -Dm644 files/io.github.MCDFsteve.NipaPlay-Reload.metainfo.xml
+        /app/share/metainfo/io.github.MCDFsteve.NipaPlay-Reload.metainfo.xml
+    sources:
+      # 用 AppImage 而非 deb：deb 不带 mpv/ffmpeg/mimalloc 等依赖，AppImage 全部自带
+      - type: file
+        url: https://github.com/AimesSoft/NipaPlay-Reload/releases/download/v1.11.9/NipaPlay-1.11.9-Linux-amd64.AppImage
+        sha256: da1f0df2959017a1ba06f328e8e25d7c6fdc411ad81b6136853f2b8e28bd5863
+        dest-filename: nipa.AppImage
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/AimesSoft/NipaPlay-Reload/releases/latest
+          version-query: .tag_name | sub("^v"; "")
+          url-query: .assets[] | select(.name | test("Linux-amd64\\.AppImage$")) | .browser_download_url
+      - type: dir
+        path: ../files/nipaplay
+        dest: files

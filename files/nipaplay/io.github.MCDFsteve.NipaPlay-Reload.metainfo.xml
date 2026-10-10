@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.MCDFsteve.NipaPlay-Reload</id>
+  <name>NipaPlay</name>
+  <summary>Video player with danmaku support (repackaged official release)</summary>
+  <summary xml:lang="zh_CN">NipaPlay 弹幕视频播放器（官方发布包重打包）</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <launchable type="desktop-id">io.github.MCDFsteve.NipaPlay-Reload.desktop</launchable>
+  <description>
+    <p>NipaPlay is a cross-platform video player with danmaku support. This package repackages the official GitHub release.</p>
+  </description>
+  <url type="homepage">https://github.com/AimesSoft/NipaPlay-Reload</url>
+</component>
