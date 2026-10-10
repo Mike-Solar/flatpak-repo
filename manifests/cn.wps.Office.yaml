@@ -29,20 +29,20 @@ modules:
       # 包装脚本指向 /app 下的安装路径
       - for b in wps et wpp wpspdf; do sed 's|/opt/kingsoft/wps-office|/app/opt/kingsoft/wps-office|g'
         usr/bin/$b > /app/bin/$b; chmod 755 /app/bin/$b; done
-      # desktop 文件重命名为 app-id 前缀（多组件：Writer/ET/WPP/PDF）
+      # desktop 文件重命名为 app-id 前缀（prometheus=合并模式主入口，et/wpp/pdf 为组件）
       - |
-        for c in wps et wpp pdf; do
-          case $c in wps) suffix="";; *) suffix=".$c";; esac; \
+        for c in prometheus et wpp pdf; do
+          case $c in prometheus) suffix="";; *) suffix=".$c";; esac; \
           sed -e "s|^Exec=/usr/bin/\([a-z]*\)|Exec=\1|" \
               -e "s|^Icon=.*|Icon=cn.wps.Office$suffix|" \
               usr/share/applications/wps-office-$c.desktop \
               > /app/share/applications/cn.wps.Office$suffix.desktop; \
         done
-      # 图标（12.x 新版 2023 系列，256px）
+      # 图标（12.x 新版 2023 系列，256px；主图标用合并模式 kprometheus）
       - |
-        for pair in wps:wpsmain et:etmain wpp:wppmain pdf:pdfmain; do
+        for pair in prometheus:kprometheus et:etmain wpp:wppmain pdf:pdfmain; do
           c=${pair%%:*}; m=${pair##*:}; \
-          case $c in wps) suffix="";; *) suffix=".$c";; esac; \
+          case $c in prometheus) suffix="";; *) suffix=".$c";; esac; \
           install -Dm644 usr/share/icons/hicolor/256x256/mimetypes/wps-office2023-$m.png \
             /app/share/icons/hicolor/256x256/apps/cn.wps.Office$suffix.png; \
         done
