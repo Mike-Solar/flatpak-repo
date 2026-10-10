@@ -1,0 +1,7 @@
+[Flatpak Repo]
+Title=MikeSolar Repo
+Url=https://flatpak.rjs04.com/repo
+Homepage=https://github.com/Mike-Solar/flatpak-repo
+Comment=Self-hosted: Feishu, WPS Office CN, MoeKoeMusic
+Comment[zh_CN]=自托管源：飞书、WPS Office 国内版、MoeKoeMusic
+Icon=https://www.cloudflare.com/favicon.ico
