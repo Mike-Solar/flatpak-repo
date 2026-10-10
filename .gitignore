@@ -1,3 +1,4 @@
 build/
 ostree-repo/
 .flatpak-builder/
+downloads/

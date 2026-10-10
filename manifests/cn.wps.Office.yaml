@@ -38,20 +38,22 @@ modules:
               usr/share/applications/wps-office-$c.desktop \
               > /app/share/applications/cn.wps.Office$suffix.desktop; \
         done
-      # 图标
+      # 图标（12.x 新版 2023 系列，256px）
       - |
         for pair in wps:wpsmain et:etmain wpp:wppmain pdf:pdfmain; do
           c=${pair%%:*}; m=${pair##*:}; \
           case $c in wps) suffix="";; *) suffix=".$c";; esac; \
-          install -Dm644 usr/share/icons/hicolor/128x128/mimetypes/wps-office2019-$m.png \
-            /app/share/icons/hicolor/128x128/apps/cn.wps.Office$suffix.png; \
+          install -Dm644 usr/share/icons/hicolor/256x256/mimetypes/wps-office2023-$m.png \
+            /app/share/icons/hicolor/256x256/apps/cn.wps.Office$suffix.png; \
         done
       - install -Dm644 files/cn.wps.Office.metainfo.xml
         /app/share/metainfo/cn.wps.Office.metainfo.xml
     sources:
+      # WPS 12.x 国内版。官方 CDN 需签名 URL（见 scripts/fetch-wps.sh），
+      # CI 在构建前下载到 downloads/。版本升级 = 改这里的文件名+sha256+workflow 里的版本变量。
       - type: file
-        url: https://wdl1.pcfg.cache.wpscdn.com/wpsdl/wpsoffice/download/linux/11723/wps-office_11.1.0.11723.XA_amd64.deb
-        sha256: fe6326210f69d94efdbf2728914d293036be391b93a614f58cd0e1ff1d4923b3
+        path: ../downloads/wps-office_12.1.2.28080_amd64.deb
+        sha256: 2fa999f60a71e21093ab49ef6d7f61d7668c844bfebf30907d2c290e460f9be0
         dest-filename: wps.deb
       - type: dir
         path: ../files/wps

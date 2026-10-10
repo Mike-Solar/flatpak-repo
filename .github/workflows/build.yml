@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Download WPS deb (signed CDN URL)
+        run: bash scripts/fetch-wps.sh
+
       - name: Build all apps into one ostree repo
         run: |
           set -e
