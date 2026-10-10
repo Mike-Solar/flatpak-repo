@@ -15,18 +15,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Feishu & MoeKoeMusic
+      - name: Check Feishu
         uses: docker://ghcr.io/flathub/flatpak-external-data-checker:latest
-        env:
+        env: &checker-env
           GIT_AUTHOR_NAME: fedc[bot]
           GIT_COMMITTER_NAME: fedc[bot]
           GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: --commit-only --commit-to-current-branch
-            manifests/cn.feishu.Feishu.yaml
-            manifests/io.github.MoeKoeMusic.MoeKoeMusic.yaml
+          args: --commit-only --commit-to-current-branch manifests/cn.feishu.Feishu.yaml
+
+      - name: Check MoeKoeMusic
+        uses: docker://ghcr.io/flathub/flatpak-external-data-checker:latest
+        env: *checker-env
+        with:
+          args: --commit-only --commit-to-current-branch manifests/io.github.MoeKoeMusic.MoeKoeMusic.yaml
 
       - name: Check WPS (via AUR pkgver)
         id: wps
