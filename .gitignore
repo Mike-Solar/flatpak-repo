@@ -1,0 +1,3 @@
+build/
+ostree-repo/
+.flatpak-builder/

@@ -1,0 +1,46 @@
+app-id: io.github.MoeKoeMusic.MoeKoeMusic
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: moekoemusic
+separate-locales: false
+
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --share=network
+  - --device=dri
+  - --filesystem=xdg-download
+  - --filesystem=xdg-music
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=org.mpris.MediaPlayer2.*
+
+modules:
+  - name: moekoemusic
+    buildsystem: simple
+    build-commands:
+      - ar x moekoe.deb
+      - tar -xf data.tar.xz
+      - install -d /app/opt /app/bin /app/share/applications /app/share/metainfo
+      - cp -r "opt/MoeKoe Music" /app/opt/
+      - install -Dm755 files/moekoemusic.sh /app/bin/moekoemusic
+      - sed -e 's|^Exec=.*|Exec=moekoemusic %U|'
+        -e 's|^Icon=.*|Icon=io.github.MoeKoeMusic.MoeKoeMusic|'
+        usr/share/applications/moekoemusic.desktop
+        > /app/share/applications/io.github.MoeKoeMusic.MoeKoeMusic.desktop
+      - cp -r usr/share/icons /app/share/
+      - find /app/share/icons -name moekoemusic.png -exec sh -c
+        'mv "$1" "$(dirname "$1")/io.github.MoeKoeMusic.MoeKoeMusic.png"' _ {} \;
+      - install -Dm644 files/io.github.MoeKoeMusic.MoeKoeMusic.metainfo.xml
+        /app/share/metainfo/io.github.MoeKoeMusic.MoeKoeMusic.metainfo.xml
+    sources:
+      - type: file
+        url: https://github.com/MoeKoeMusic/MoeKoeMusic/releases/download/v1.7.0/MoeKoe_Music_v1.7.0-amd64.deb
+        sha256: fdc496fe5e88f8b2499458059648a8dff2e789e9702785294d72ffa53c1585fb
+        dest-filename: moekoe.deb
+      - type: dir
+        path: ../files/moekoemusic
+        dest: files

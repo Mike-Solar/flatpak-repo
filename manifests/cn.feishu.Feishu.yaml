@@ -1,0 +1,46 @@
+app-id: cn.feishu.Feishu
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: feishu
+separate-locales: false
+
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --share=network
+  - --device=dri
+  - --filesystem=xdg-download
+  - --filesystem=xdg-documents
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.ScreenSaver
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.a11y.Bus
+
+modules:
+  - name: feishu
+    buildsystem: simple
+    build-commands:
+      - ar x feishu.deb
+      - tar -xf data.tar.xz
+      - install -d /app/opt /app/bin /app/share/applications
+        /app/share/icons/hicolor/128x128/apps /app/share/metainfo
+      - cp -r opt/bytedance /app/opt/
+      - install -Dm755 files/feishu.sh /app/bin/feishu
+      - sed -e 's|^Exec=.*|Exec=feishu %U|' -e 's|^Icon=.*|Icon=cn.feishu.Feishu|'
+        usr/share/applications/bytedance-feishu.desktop
+        > /app/share/applications/cn.feishu.Feishu.desktop
+      - install -Dm644 opt/bytedance/feishu/product_logo_128.png
+        /app/share/icons/hicolor/128x128/apps/cn.feishu.Feishu.png
+      - install -Dm644 files/cn.feishu.Feishu.metainfo.xml
+        /app/share/metainfo/cn.feishu.Feishu.metainfo.xml
+    sources:
+      - type: file
+        url: https://sf3-cn.feishucdn.com/obj/ee-appcenter/fc38d53a/Feishu-linux_x64-7.72.23.deb
+        sha256: 7c744ce101e29f50d8d0fc099788b64cb389dde3178178a7fce9ffcdbf296e13
+        dest-filename: feishu.deb
+      - type: dir
+        path: ../files/feishu
+        dest: files

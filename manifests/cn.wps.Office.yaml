@@ -1,0 +1,58 @@
+app-id: cn.wps.Office
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: wps
+separate-locales: false
+
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --share=network
+  - --device=dri
+  - --filesystem=home
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.a11y.Bus
+
+modules:
+  - name: wps-office
+    buildsystem: simple
+    build-commands:
+      - ar x wps.deb
+      - tar -xf data.tar.xz
+      - install -d /app/opt /app/bin /app/share/applications
+        /app/share/icons/hicolor/48x48/apps /app/share/metainfo
+      - cp -r opt/kingsoft /app/opt/
+      # 包装脚本指向 /app 下的安装路径
+      - for b in wps et wpp wpspdf; do sed 's|/opt/kingsoft/wps-office|/app/opt/kingsoft/wps-office|g'
+        usr/bin/$b > /app/bin/$b; chmod 755 /app/bin/$b; done
+      # desktop 文件重命名为 app-id 前缀（多组件：Writer/ET/WPP/PDF）
+      - |
+        for c in wps et wpp pdf; do
+          case $c in wps) suffix="";; *) suffix=".$c";; esac; \
+          sed -e "s|^Exec=/usr/bin/\([a-z]*\)|Exec=\1|" \
+              -e "s|^Icon=.*|Icon=cn.wps.Office$suffix|" \
+              usr/share/applications/wps-office-$c.desktop \
+              > /app/share/applications/cn.wps.Office$suffix.desktop; \
+        done
+      # 图标
+      - |
+        for pair in wps:wpsmain et:etmain wpp:wppmain pdf:pdfmain; do
+          c=${pair%%:*}; m=${pair##*:}; \
+          case $c in wps) suffix="";; *) suffix=".$c";; esac; \
+          install -Dm644 usr/share/icons/hicolor/128x128/mimetypes/wps-office2019-$m.png \
+            /app/share/icons/hicolor/128x128/apps/cn.wps.Office$suffix.png; \
+        done
+      - install -Dm644 files/cn.wps.Office.metainfo.xml
+        /app/share/metainfo/cn.wps.Office.metainfo.xml
+    sources:
+      - type: file
+        url: https://wdl1.pcfg.cache.wpscdn.com/wpsdl/wpsoffice/download/linux/11723/wps-office_11.1.0.11723.XA_amd64.deb
+        sha256: fe6326210f69d94efdbf2728914d293036be391b93a614f58cd0e1ff1d4923b3
+        dest-filename: wps.deb
+      - type: dir
+        path: ../files/wps
+        dest: files

@@ -1,0 +1,50 @@
+name: build-and-publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build all apps into one ostree repo
+        run: |
+          set -e
+          for m in manifests/*.yaml; do
+            echo "=== building $m ==="
+            flatpak-builder --state-dir=/tmp/fb --repo=ostree-repo --force-clean /tmp/build "$m"
+          done
+          flatpak build-update-repo --generate-static-deltas ostree-repo
+          ostree --repo=ostree-repo refs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ostree-repo
+          path: ostree-repo/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ostree-repo
+          path: ostree-repo/
+
+      - name: Sync to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+          AWS_REGION: auto
+        run: aws s3 sync ostree-repo/ "s3://${{ secrets.R2_BUCKET }}/repo/"

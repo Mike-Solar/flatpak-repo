@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>cn.wps.Office</id>
+  <name>WPS Office</name>
+  <summary>Office suite: Writer, Spreadsheets, Presentation, PDF (CN version, repackaged official build)</summary>
+  <summary xml:lang="zh_CN">WPS Office 国内版办公套件（官方 Linux 版重打包）：文字、表格、演示、PDF</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>proprietary</project_license>
+  <launchable type="desktop-id">cn.wps.Office.desktop</launchable>
+  <description>
+    <p>WPS Office CN version, repackaged from the official Linux deb. Includes Writer, Spreadsheets (ET), Presentation (WPP) and PDF.</p>
+  </description>
+  <url type="homepage">https://www.wps.cn/</url>
+</component>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.MoeKoeMusic.MoeKoeMusic</id>
+  <name>MoeKoe Music</name>
+  <name xml:lang="zh_CN">MoeKoe 酷狗</name>
+  <summary>Third-party Kugou music client (repackaged official release)</summary>
+  <summary xml:lang="zh_CN">第三方酷狗音乐客户端（官方发布包重打包）</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <launchable type="desktop-id">io.github.MoeKoeMusic.MoeKoeMusic.desktop</launchable>
+  <description>
+    <p>MoeKoeMusic is a third-party Kugou music client. This package repackages the official GitHub release.</p>
+  </description>
+  <url type="homepage">https://github.com/MoeKoeMusic/MoeKoeMusic</url>
+</component>

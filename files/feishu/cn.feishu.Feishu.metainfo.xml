@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>cn.feishu.Feishu</id>
+  <name>Feishu</name>
+  <name xml:lang="zh_CN">飞书</name>
+  <summary>All-in-one collaboration platform (repackaged official Linux build)</summary>
+  <summary xml:lang="zh_CN">飞书一体化协作平台（官方 Linux 版重打包）</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>proprietary</project_license>
+  <launchable type="desktop-id">cn.feishu.Feishu.desktop</launchable>
+  <description>
+    <p>Feishu integrates messaging, calendar, video meetings and collaborative docs. This package repackages the official binary from feishu.cn.</p>
+  </description>
+  <url type="homepage">https://www.feishu.cn/</url>
+</component>
