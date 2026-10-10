@@ -44,6 +44,9 @@ modules:
       - sed -e 's|^Exec=.*|Exec=nipaplay %f|'
         squashfs-root/io.github.MCDFsteve.NipaPlay-Reload.desktop
         > /app/share/applications/io.github.MCDFsteve.NipaPlay-Reload.desktop
+      # 应用启动后会把 wayland app_id 改成 "NipaPlay"，需要 StartupWMClass 才能关联图标
+      - echo 'StartupWMClass=NipaPlay' >>
+        /app/share/applications/io.github.MCDFsteve.NipaPlay-Reload.desktop
       # 图标原图 838px 超出 flatpak 512px 上限，用预缩放的
       - install -Dm644 files/io.github.MCDFsteve.NipaPlay-Reload.png
         /app/share/icons/hicolor/512x512/apps/io.github.MCDFsteve.NipaPlay-Reload.png
