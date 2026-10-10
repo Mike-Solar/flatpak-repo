@@ -13,7 +13,7 @@
 ## 使用（客户端）
 
 ```bash
-flatpak remote-add --no-gpg-verify mikesolar https://pub-d650dee4ae024660b2e2657f6bbbdb3f.r2.dev/repo
+flatpak remote-add --no-gpg-verify mikesolar https://flatpak.rjs04.com/repo
 flatpak install mikesolar cn.feishu.Feishu
 flatpak install mikesolar cn.wps.Office
 flatpak install mikesolar io.github.MoeKoeMusic.MoeKoeMusic
