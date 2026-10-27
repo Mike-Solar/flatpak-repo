@@ -3,6 +3,8 @@ name: build-and-publish
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "0 21 * * *"   # 每天 05:00 CST
   workflow_dispatch:
 
 jobs:
@@ -27,6 +29,8 @@ jobs:
       - name: Build all apps into one ostree repo
         run: |
           set -e
+          # flathub-infra 镜像缺 machine-id，flatpak-builder 起 dbus/rofiles-fuse 会炸
+          mkdir -p /var/lib/dbus && dbus-uuidgen --ensure=/etc/machine-id 2>/dev/null || systemd-machine-id-setup
           KEYID=2EBACB345EEE12989141A60FBE75E703425025BA
           for m in manifests/*.yaml; do
             echo "=== building $m ==="
