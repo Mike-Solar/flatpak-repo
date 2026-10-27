@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-26.08
       options: --privileged
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,9 @@ jobs:
             echo "=== building $m ==="
             flatpak-builder --state-dir=/tmp/fb --repo=ostree-repo --force-clean /tmp/build "$m"
           done
-          for ref in $(ostree --repo=ostree-repo refs); do
-            flatpak build-sign --gpg-sign=$KEYID ostree-repo "$ref"
+          for ref in $(ostree --repo=ostree-repo refs | grep '^app/'); do
+            appid=$(echo "$ref" | cut -d/ -f2)
+            flatpak build-sign --gpg-sign=$KEYID ostree-repo "$appid"
           done
           flatpak build-update-repo --generate-static-deltas --gpg-sign=$KEYID ostree-repo
           ostree --repo=ostree-repo refs
