@@ -34,7 +34,7 @@ jobs:
           KEYID=2EBACB345EEE12989141A60FBE75E703425025BA
           for m in manifests/*.yaml; do
             echo "=== building $m ==="
-            flatpak-builder --state-dir=/tmp/fb --repo=ostree-repo --force-clean /tmp/build "$m"
+            flatpak-builder --disable-rofiles-fuse --state-dir=/tmp/fb --repo=ostree-repo --force-clean /tmp/build "$m"
           done
           for ref in $(ostree --repo=ostree-repo refs | grep '^app/'); do
             appid=$(echo "$ref" | cut -d/ -f2)
