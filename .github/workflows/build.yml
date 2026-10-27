@@ -17,14 +17,25 @@ jobs:
       - name: Download WPS deb (signed CDN URL)
         run: bash scripts/fetch-wps.sh
 
+      - name: Import GPG signing key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --list-secret-keys
+
       - name: Build all apps into one ostree repo
         run: |
           set -e
+          KEYID=2EBACB345EEE12989141A60FBE75E703425025BA
           for m in manifests/*.yaml; do
             echo "=== building $m ==="
             flatpak-builder --state-dir=/tmp/fb --repo=ostree-repo --force-clean /tmp/build "$m"
           done
-          flatpak build-update-repo --generate-static-deltas ostree-repo
+          for ref in $(ostree --repo=ostree-repo refs); do
+            flatpak build-sign --gpg-sign=$KEYID ostree-repo "$ref"
+          done
+          flatpak build-update-repo --generate-static-deltas --gpg-sign=$KEYID ostree-repo
           ostree --repo=ostree-repo refs
 
       - uses: actions/upload-artifact@v4

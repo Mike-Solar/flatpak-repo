@@ -5,3 +5,4 @@ Homepage=https://github.com/Mike-Solar/flatpak-repo
 Comment=Self-hosted: Feishu, WPS Office CN, MoeKoeMusic
 Comment[zh_CN]=自托管源：飞书、WPS Office 国内版、MoeKoeMusic
 Icon=https://www.cloudflare.com/favicon.ico
+GPGKey=mDMEauD7yxYJKwYBBAHaRw8BAQdANAFirbg7IjZoD26tLp+wZgkfy51j39U+NO0tpAWqRHK0RHN1bnl1IChtaWtlc29sYXIgZmxhdHBhayByZXBvKSA8TWlrZS1Tb2xhckB1c2Vycy5ub3JlcGx5LmdpdGh1Yi5jb20+iJAEExYKADgWIQQuuss0Xu4SmJFBpg++decDQlAlugUCauD7ywIbAwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRC+decDQlAlugd2AQCf+Vz7tSwG9G0RXUq/pWanTGnxXWpEe0RzptkWeogVHQD7BrxUN1hfrr35p85QipllZJhhnEWdX6+GxIqTObpe3QI=
