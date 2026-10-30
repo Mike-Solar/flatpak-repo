@@ -32,23 +32,23 @@ jobs:
           # flathub-infra 镜像缺 machine-id，flatpak-builder 起 dbus/rofiles-fuse 会炸
           mkdir -p /var/lib/dbus && dbus-uuidgen --ensure=/etc/machine-id 2>/dev/null || systemd-machine-id-setup
           KEYID=2EBACB345EEE12989141A60FBE75E703425025BA
+          # build-sign/build-update-repo 默认用临时空 keyring，必须显式指向真实 homedir
+          GHOME=$(gpgconf --list-dirs homedir)
+          echo "GPG homedir: $GHOME"
           for m in manifests/*.yaml; do
             echo "=== building $m ==="
             flatpak-builder --disable-rofiles-fuse --state-dir=/tmp/fb --repo=ostree-repo --force-clean /tmp/build "$m"
           done
           for ref in $(ostree --repo=ostree-repo refs | grep '^app/'); do
             appid=$(echo "$ref" | cut -d/ -f2)
-            flatpak build-sign --gpg-sign=$KEYID ostree-repo "$appid"
+            flatpak build-sign --gpg-homedir="$GHOME" --gpg-sign=$KEYID ostree-repo "$appid"
           done
-          flatpak build-update-repo --generate-static-deltas --gpg-sign=$KEYID ostree-repo
-          # 校验：每个 ref 的 commit 都必须有 commitmeta（GPG 签名），否则客户端拒绝拉取
+          flatpak build-update-repo --gpg-homedir="$GHOME" --generate-static-deltas --gpg-sign=$KEYID ostree-repo
+          # 校验：每个 ref 的 commit 必须有 .commitmeta（GPG 签名），否则客户端拒绝拉取
           for ref in $(ostree --repo=ostree-repo refs); do
             c=$(ostree --repo=ostree-repo rev-parse "$ref")
-            if ostree --repo=ostree-repo commitmeta "$c" >/dev/null 2>&1; then
-              echo "signed ✓ $ref -> $c"
-            else
-              echo "UNSIGNED ✗ $ref -> $c"; exit 1
-            fi
+            f="ostree-repo/objects/${c:0:2}/${c:2}.commitmeta"
+            if [ -f "$f" ]; then echo "signed ✓ $ref -> $c"; else echo "UNSIGNED ✗ $ref -> $c"; exit 1; fi
           done
           ostree --repo=ostree-repo refs
 
