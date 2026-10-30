@@ -41,6 +41,11 @@ jobs:
             flatpak build-sign --gpg-sign=$KEYID ostree-repo "$appid"
           done
           flatpak build-update-repo --generate-static-deltas --gpg-sign=$KEYID ostree-repo
+          # appstream2 等元数据 ref 是 build-update-repo 才生成的，按 commit 全量补签
+          for ref in $(ostree --repo=ostree-repo refs); do
+            ostree --repo=ostree-repo sign --gpg-sign=$KEYID "$(ostree --repo=ostree-repo rev-parse "$ref")" 2>/dev/null || true
+          done
+          flatpak build-update-repo --generate-static-deltas --gpg-sign=$KEYID ostree-repo
           ostree --repo=ostree-repo refs
 
       - uses: actions/upload-artifact@v4
