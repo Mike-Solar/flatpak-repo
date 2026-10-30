@@ -41,15 +41,14 @@ jobs:
             flatpak build-sign --gpg-sign=$KEYID ostree-repo "$appid"
           done
           flatpak build-update-repo --generate-static-deltas --gpg-sign=$KEYID ostree-repo
-          # appstream2 等元数据 ref 是 build-update-repo 才生成的，按 commit 全量补签；
-          # 第二次更新只刷新 summary（--no-update-appstream），否则会把刚签的 appstream2 换掉
+          # 校验：每个 ref 的 commit 都必须有 commitmeta（GPG 签名），否则客户端拒绝拉取
           for ref in $(ostree --repo=ostree-repo refs); do
-            ostree --repo=ostree-repo sign --gpg-sign=$KEYID "$(ostree --repo=ostree-repo rev-parse "$ref")"
-          done
-          flatpak build-update-repo --generate-static-deltas --gpg-sign=$KEYID --no-update-appstream ostree-repo
-          for ref in $(ostree --repo=ostree-repo refs); do
-            echo "$ref -> $(ostree --repo=ostree-repo rev-parse "$ref")"
-            ostree --repo=ostree-repo commitmeta "$(ostree --repo=ostree-repo rev-parse "$ref")" >/dev/null && echo "  signed ✓"
+            c=$(ostree --repo=ostree-repo rev-parse "$ref")
+            if ostree --repo=ostree-repo commitmeta "$c" >/dev/null 2>&1; then
+              echo "signed ✓ $ref -> $c"
+            else
+              echo "UNSIGNED ✗ $ref -> $c"; exit 1
+            fi
           done
           ostree --repo=ostree-repo refs
 
