@@ -48,11 +48,19 @@ jobs:
           ostree --repo=ostree-repo refs --delete appstream/x86_64 2>/dev/null || true
           flatpak build-update-repo --gpg-homedir="$GHOME" --generate-static-deltas --gpg-sign=$KEYID --no-update-appstream ostree-repo
           # 校验：每个 ref 的 commit 必须有 .commitmeta（GPG 签名），否则客户端拒绝拉取
+          # appstream2 不是 app 形态，build-sign 签不了：临时挂一个 app ref 指向同一 commit，
+          # 签完再删（签名是挂在 commit 对象上的，与 ref 无关）
           for ref in $(ostree --repo=ostree-repo refs); do
             c=$(ostree --repo=ostree-repo rev-parse "$ref")
             f="ostree-repo/objects/${c:0:2}/${c:2}.commitmeta"
+            if [ -f "$f" ]; then echo "signed ✓ $ref -> $c"; continue; fi
+            echo "signing ref $ref (commit $c) via temp app ref"
+            ostree --repo=ostree-repo refs --create app/org.Sign.Tmp/x86_64/master "$c"
+            flatpak build-sign --gpg-homedir="$GHOME" --gpg-sign=$KEYID ostree-repo org.Sign.Tmp
+            ostree --repo=ostree-repo refs --delete app/org.Sign.Tmp/x86_64/master
             if [ -f "$f" ]; then echo "signed ✓ $ref -> $c"; else echo "UNSIGNED ✗ $ref -> $c"; exit 1; fi
           done
+          flatpak build-update-repo --gpg-homedir="$GHOME" --generate-static-deltas --gpg-sign=$KEYID --no-update-appstream ostree-repo
           ostree --repo=ostree-repo refs
 
       - uses: actions/upload-artifact@v4
