@@ -44,6 +44,9 @@ jobs:
             flatpak build-sign --gpg-homedir="$GHOME" --gpg-sign=$KEYID ostree-repo "$appid"
           done
           flatpak build-update-repo --gpg-homedir="$GHOME" --generate-static-deltas --gpg-sign=$KEYID ostree-repo
+          # 旧的 appstream/x86_64 分支（扁平化前遗留）build-update-repo 不签名，现代客户端也不用它：直接删除
+          ostree --repo=ostree-repo refs --delete appstream/x86_64 2>/dev/null || true
+          flatpak build-update-repo --gpg-homedir="$GHOME" --generate-static-deltas --gpg-sign=$KEYID --no-update-appstream ostree-repo
           # 校验：每个 ref 的 commit 必须有 .commitmeta（GPG 签名），否则客户端拒绝拉取
           for ref in $(ostree --repo=ostree-repo refs); do
             c=$(ostree --repo=ostree-repo rev-parse "$ref")
