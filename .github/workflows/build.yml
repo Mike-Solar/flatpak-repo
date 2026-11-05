@@ -116,12 +116,21 @@ jobs:
           AWS_REGION: auto
         run: |
           set -euo pipefail
-          # dryrun 列出"远端还没有"的对象：非空即上传不完整
+          # dryrun 只能当"候选"：R2 的 ListObjects 有延迟，刚传完可能列表里看不到。
+          # 对每个候选用 head-object 复核，只有真 404 才算缺。
           aws s3 sync ostree-repo/ "s3://${{ secrets.R2_BUCKET }}/repo/" --dryrun --only-show-errors > /tmp/pending.txt || true
           n=$(grep -c 'upload:' /tmp/pending.txt || true)
-          echo "pending objects: ${n:-0}"
-          if [ "${n:-0}" -ne 0 ]; then
-            head -20 /tmp/pending.txt
-            echo "::error::上传不完整，远端仍有 $n 个对象缺失"
+          echo "candidates: ${n:-0}"
+          missing=0
+          while IFS= read -r line; do
+            key=$(printf '%s' "$line" | sed -n 's/.*upload: ostree-repo\/\(.*\) to s3:.*/\1/p')
+            [ -z "$key" ] && continue
+            if ! aws s3api head-object --bucket "${{ secrets.R2_BUCKET }}" --key "repo/$key" >/dev/null 2>&1; then
+              echo "MISSING $key"; missing=$((missing+1))
+            fi
+          done < /tmp/pending.txt
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::上传不完整，远端缺 $missing 个对象"
             exit 1
           fi
+          echo "all objects present"
