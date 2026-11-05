@@ -88,7 +88,35 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
           AWS_REGION: auto
+          AWS_RETRY_MODE: adaptive
+          AWS_MAX_ATTEMPTS: "10"
         run: |
-          aws s3 sync ostree-repo/ "s3://${{ secrets.R2_BUCKET }}/repo/"
+          set -euo pipefail
+          # 先传 summary 之外的其余对象，最后才传 summary：客户端在新对象齐备前拿不到新 summary，
+          # 避免出现"新 summary 引用了还没上传的 delta part"（曾导致 404）
+          aws s3 sync ostree-repo/ "s3://${{ secrets.R2_BUCKET }}/repo/" \
+            --exclude "summary" --exclude "summary.sig" --exclude "config" \
+            --only-show-errors
+          aws s3 cp ostree-repo/config "s3://${{ secrets.R2_BUCKET }}/repo/config" --only-show-errors
           aws s3 cp mikesolar.flatpakrepo "s3://${{ secrets.R2_BUCKET }}/mikesolar.flatpakrepo" \
-            --content-type "application/vnd.flatpak.repo"
+            --content-type "application/vnd.flatpak.repo" --only-show-errors
+          aws s3 cp ostree-repo/summary "s3://${{ secrets.R2_BUCKET }}/repo/summary" --only-show-errors
+          aws s3 cp ostree-repo/summary.sig "s3://${{ secrets.R2_BUCKET }}/repo/summary.sig" --only-show-errors
+
+      - name: Verify upload (nothing left to upload = everything is there)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+          AWS_REGION: auto
+        run: |
+          set -euo pipefail
+          # dryrun 列出"远端还没有"的对象：非空即上传不完整
+          aws s3 sync ostree-repo/ "s3://${{ secrets.R2_BUCKET }}/repo/" --dryrun --only-show-errors > /tmp/pending.txt || true
+          n=$(grep -c 'upload:' /tmp/pending.txt || true)
+          echo "pending objects: ${n:-0}"
+          if [ "${n:-0}" -ne 0 ]; then
+            head -20 /tmp/pending.txt
+            echo "::error::上传不完整，远端仍有 $n 个对象缺失"
+            exit 1
+          fi
