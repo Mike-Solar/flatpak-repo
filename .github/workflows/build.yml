@@ -92,6 +92,11 @@ jobs:
           AWS_MAX_ATTEMPTS: "10"
         run: |
           set -euo pipefail
+          # R2 对同对象高并发 PUT 会返回 ServiceUnavailable（曾导致 delta part 丢失 → 客户端 404）
+          aws configure set default.s3.max_concurrent_requests 4
+          aws configure set default.s3.max_queue_size 1000
+          aws configure set default.retry_mode adaptive
+          aws configure set default.max_attempts 10
           # 先传 summary 之外的其余对象，最后才传 summary：客户端在新对象齐备前拿不到新 summary，
           # 避免出现"新 summary 引用了还没上传的 delta part"（曾导致 404）
           aws s3 sync ostree-repo/ "s3://${{ secrets.R2_BUCKET }}/repo/" \
